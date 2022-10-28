@@ -29,6 +29,7 @@ func main() {
 	file, err := os.Create(fmt.Sprintf("%s.txt", strings.ReplaceAll(time.Now().Format(time.RFC3339), ":", "-")))
 	checkErr(err)
 	defer file.Close()
+	file.WriteString("[")
 
 	var count = 0
 	var continued = true
@@ -76,7 +77,7 @@ func main() {
 		}
 	}
 
-	file.WriteString(fmt.Sprintf("%d", count))
+	file.WriteString("]")
 	fmt.Println("Done,", count)
 }
 
