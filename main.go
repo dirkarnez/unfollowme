@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -26,10 +27,12 @@ func main() {
 
 	var url = "https://i.instagram.com/api/v1/friendships/49612955961/followers/?count=12"
 
-	file, err := os.Create(fmt.Sprintf("%s.txt", strings.ReplaceAll(time.Now().Format(time.RFC3339), ":", "-")))
-	checkErr(err)
-	defer file.Close()
-	file.WriteString("[")
+	type Entry struct {
+		ID   string `json:"id"`
+		Name string `json:"name"`
+	}
+
+	jsonEntry := []Entry{}
 
 	var count = 0
 	var continued = true
@@ -64,7 +67,7 @@ func main() {
 				log.Println(err)
 			}
 
-			file.WriteString(fmt.Sprintf("{\"id\": \"%s\", \"name\": \"%s\"},\n", pk.Value(), username.Value()))
+			jsonEntry = append(jsonEntry, Entry{ID: fmt.Sprintf("%s", pk.Value()), Name: fmt.Sprintf("%s", username.Value())})
 		}
 
 		count = count + len(list)
@@ -77,7 +80,12 @@ func main() {
 		}
 	}
 
-	file.WriteString("]")
+	bytes, err := json.MarshalIndent(jsonEntry, "", "\t")
+	checkErr(err)
+
+	err = ioutil.WriteFile(fmt.Sprintf("%s.txt", strings.ReplaceAll(time.Now().Format(time.RFC3339), ":", "-")), bytes, 0644)
+	checkErr(err)
+
 	fmt.Println("Done,", count)
 }
 
